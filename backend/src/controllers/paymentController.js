@@ -73,6 +73,91 @@ const createOrder = async (req, res) => {
   }
 };
 
+// Razorpay Webhook Handler
+// Validates webhook signature and updates payment status server-to-server
+const webhook = async (req, res) => {
+  try {
+    const signature = req.headers['x-razorpay-signature'];
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error('RAZORPAY_WEBHOOK_SECRET not configured');
+      return res.status(500).send('Webhook secret not configured');
+    }
+
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body);
+    const expected = crypto.createHmac('sha256', webhookSecret).update(rawBody).digest('hex');
+
+    if (expected !== signature) {
+      console.warn('Invalid webhook signature');
+      return res.status(400).send('Invalid signature');
+    }
+
+    const event = JSON.parse(rawBody.toString());
+
+    // Handle common events: payment.captured, order.paid, payment.failed
+    let orderId = null;
+    let paymentId = null;
+    if (event?.payload?.payment?.entity) {
+      const pay = event.payload.payment.entity;
+      orderId = pay.order_id;
+      paymentId = pay.id;
+    } else if (event?.payload?.order?.entity) {
+      orderId = event.payload.order.entity.id;
+    }
+
+    if (!orderId) {
+      console.warn('Webhook received without orderId');
+      return res.status(200).send('ok');
+    }
+
+    if (event.event === 'payment.captured' || event.event === 'order.paid') {
+      const payment = await Payment.findOneAndUpdate(
+        { orderId },
+        { status: 'paid', ...(paymentId ? { paymentId } : {}) },
+        { new: true }
+      );
+
+      if (payment) {
+        // Update campaign totals for campaign donations
+        if (payment.campaign) {
+          await Campaign.findByIdAndUpdate(
+            payment.campaign,
+            { $inc: { raisedAmount: payment.amount / 100 } }
+          );
+        }
+
+        // Update anonymous tracker
+        if (payment.isAnonymous && payment.anonymousId) {
+          await AnonymousTracker.findOneAndUpdate(
+            { anonymousId: payment.anonymousId },
+            {
+              $inc: {
+                totalDonations: 1,
+                totalAmount: payment.amount / 100,
+                impactScore: Math.floor((payment.amount / 100) * 0.1)
+              },
+              lastDonationDate: new Date()
+            }
+          );
+        }
+      }
+    } else if (event.event === 'payment.failed') {
+      if (paymentId) {
+        await Payment.findOneAndUpdate(
+          { orderId },
+          { status: 'failed' }
+        );
+      }
+    }
+
+    return res.status(200).send('ok');
+  } catch (err) {
+    console.error('Webhook handler error:', err);
+    return res.status(500).send('error');
+  }
+};
+
 // Create Anonymous Razorpay order
 const createAnonymousOrder = async (req, res) => {
   try {
@@ -377,6 +462,7 @@ module.exports = {
   createOrder,
   createAnonymousOrder,
   verifyPayment,
+  webhook,
   getPaymentHistory,
   getPaymentAnalytics
 };

@@ -12,6 +12,7 @@ const RazorpayPayment = ({
   children 
 }) => {
   const [loading, setLoading] = useState(false);
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
   // Load Razorpay SDK
   const loadRazorpay = () => {
@@ -88,7 +89,7 @@ const RazorpayPayment = ({
 
       // Razorpay payment options
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_RcsavZB6Xb9MD7',
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RcsavZB6Xb9MD7',
         amount: order.amount,
         currency: order.currency,
         name: '🌍 Social Impact Platform',

@@ -83,7 +83,7 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
 
         // Razorpay payment options
         const options = {
-          key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_RcsavZB6Xb9MD7',
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RcsavZB6Xb9MD7',
           amount: order.amount,
           currency: order.currency,
           name: '🌍 Social Impact Platform',
@@ -106,7 +106,7 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
               const verifyData = await verifyResponse.json();
 
               if (verifyData.success) {
-                setResult({
+                const successResult = {
                   id: verifyData.payment.id,
                   orderId: verifyData.payment.orderId,
                   paymentId: verifyData.payment.paymentId,
@@ -115,7 +115,18 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
                   anonymousId: orderData.anonymousId,
                   qrCode: orderData.qrCode,
                   impactStory: verifyData.payment.impactStory
-                });
+                };
+                setResult(successResult);
+                try {
+                  if (isAnonymous && orderData.anonymousId && orderData.qrCode) {
+                    localStorage.setItem('anonDonation', JSON.stringify({
+                      anonymousId: orderData.anonymousId,
+                      qrCode: orderData.qrCode,
+                      amount: parseFloat(amount),
+                      when: new Date().toISOString()
+                    }));
+                  }
+                } catch {}
                 setImpactStory(verifyData.payment.impactStory);
                 setStep(3);
                 if (onSuccess) onSuccess(verifyData.payment);
