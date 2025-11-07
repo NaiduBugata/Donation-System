@@ -3,6 +3,7 @@ const { protect } = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
 const {
   createOrder,
+  createAnonymousOrder,
   verifyPayment,
   getPaymentHistory,
   getPaymentAnalytics
@@ -10,9 +11,12 @@ const {
 
 const router = express.Router();
 
+// Public routes (no authentication required)
+router.post('/create-anonymous-order', createAnonymousOrder);
+
 // Protected routes (require authentication)
 router.post('/create-order', protect, createOrder);
-router.post('/verify-payment', protect, verifyPayment);
+router.post('/verify-payment', verifyPayment); // Allow both authenticated and anonymous
 router.get('/history', protect, getPaymentHistory);
 
 // Admin only routes

@@ -4,7 +4,9 @@ const paymentSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: function() {
+      return !this.isAnonymous;
+    }
   },
   campaign: {
     type: mongoose.Schema.Types.ObjectId,
@@ -40,6 +42,18 @@ const paymentSchema = new mongoose.Schema({
   isAnonymous: {
     type: Boolean,
     default: false
+  },
+  anonymousId: {
+    type: String,
+    required: function() {
+      return this.isAnonymous;
+    }
+  },
+  donorEmail: {
+    type: String,
+    required: function() {
+      return this.isAnonymous;
+    }
   },
   donationType: {
     type: String,

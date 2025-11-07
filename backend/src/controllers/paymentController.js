@@ -2,7 +2,9 @@ const razorpay = require('../config/razorpay');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const Campaign = require('../models/Campaign');
+const AnonymousTracker = require('../models/AnonymousTracker');
 const crypto = require('crypto');
+const QRCode = require('qrcode');
 
 // Create Razorpay order
 const createOrder = async (req, res) => {
@@ -71,6 +73,103 @@ const createOrder = async (req, res) => {
   }
 };
 
+// Create Anonymous Razorpay order
+const createAnonymousOrder = async (req, res) => {
+  try {
+    const { amount, campaignId, donationType = 'general', email, isAnonymous } = req.body;
+
+    // Validate amount
+    if (!amount || amount < 100) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Amount must be at least 100 paise (₹1)' 
+      });
+    }
+
+    // Validate email for anonymous donations
+    if (isAnonymous && !email) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Email is required for anonymous donations' 
+      });
+    }
+
+    // Generate anonymous ID
+    const anonymousId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Create Razorpay order
+    const options = {
+      amount: parseInt(amount), // Amount in paise
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}_${anonymousId}`,
+      payment_capture: 1,
+    };
+
+    console.log('Creating anonymous Razorpay order with options:', options);
+    const order = await razorpay.orders.create(options);
+
+    // Create QR code for tracking
+    const qrCodeData = await QRCode.toDataURL(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/track/${anonymousId}`);
+
+    // Save payment record
+    const payment = new Payment({
+      orderId: order.id,
+      amount: order.amount,
+      receipt: order.receipt,
+      status: 'created',
+      donationType,
+      isAnonymous: true,
+      anonymousId,
+      donorEmail: email,
+      campaign: campaignId || null
+    });
+    
+    await payment.save();
+
+    // Create/Update anonymous tracker
+    let anonymousTracker = await AnonymousTracker.findOne({ anonymousId });
+    if (!anonymousTracker) {
+      anonymousTracker = new AnonymousTracker({
+        anonymousId,
+        email,
+        qrCode: qrCodeData,
+        totalDonations: 0,
+        totalAmount: 0
+      });
+      await anonymousTracker.save();
+    }
+
+    console.log('✅ Anonymous order created successfully:', order.id);
+    
+    res.json({
+      success: true,
+      order: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        receipt: order.receipt
+      },
+      anonymousId,
+      qrCode: qrCodeData
+    });
+
+  } catch (error) {
+    console.error('❌ Error creating anonymous order:', error);
+    
+    let errorMessage = 'Failed to create anonymous order';
+    if (error.error && error.error.description) {
+      errorMessage = error.error.description;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      message: errorMessage
+    });
+  }
+};
+
 // Verify payment
 const verifyPayment = async (req, res) => {
   try {
@@ -106,6 +205,21 @@ const verifyPayment = async (req, res) => {
         await Campaign.findByIdAndUpdate(
           payment.campaign._id,
           { $inc: { raisedAmount: payment.amount / 100 } } // Convert paise to rupees
+        );
+      }
+
+      // Update anonymous tracker if it's an anonymous payment
+      if (payment.isAnonymous && payment.anonymousId) {
+        await AnonymousTracker.findOneAndUpdate(
+          { anonymousId: payment.anonymousId },
+          {
+            $inc: {
+              totalDonations: 1,
+              totalAmount: payment.amount / 100,
+              impactScore: Math.floor((payment.amount / 100) * 0.1)
+            },
+            lastDonationDate: new Date()
+          }
         );
       }
 
@@ -261,6 +375,7 @@ const getPaymentAnalytics = async (req, res) => {
 
 module.exports = {
   createOrder,
+  createAnonymousOrder,
   verifyPayment,
   getPaymentHistory,
   getPaymentAnalytics
