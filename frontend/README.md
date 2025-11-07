@@ -1,6 +1,6 @@
-# ODCMS Frontend (Mock Mode)
+# ODCMS Frontend - Social Impact Donation Platform
 
-This frontend runs in mock mode by default using `src/api/mockApi.js`, which intercepts `/api/*` fetch calls and returns simulated data persisted to `localStorage`.
+This frontend runs with full Razorpay payment integration and anonymous donation support. Uses `src/api/socialImpactApi.js` for backend connectivity with fallback to mock mode.
 
 Quick start (Windows PowerShell):
 

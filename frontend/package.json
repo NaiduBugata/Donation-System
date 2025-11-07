@@ -1,7 +1,7 @@
 {
   "name": "social-impact-donation-platform",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "AI-powered Social Impact Donation & Charity Management System - connecting donors, helpers, and receivers through verified, real-time, geo-aware engagement",
   "scripts": {
