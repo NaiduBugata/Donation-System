@@ -387,14 +387,121 @@ After running `seedData.js`, you'll have these default accounts:
 
 ---
 
-## 📚 Next Steps
+## � Step 8: Deploy to Render (Production)
+
+### 8.1 Prerequisites for Render Deployment
+
+- GitHub account with your repository pushed
+- Render account (sign up at [render.com](https://render.com))
+- MongoDB Atlas cluster (or use Render's MongoDB)
+
+### 8.2 Configure MongoDB Atlas
+
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+2. Create a free cluster (M0 Sandbox)
+3. Go to Database Access → Add New Database User
+4. Create username and password (save these!)
+5. Go to Network Access → Add IP Address → Allow Access from Anywhere (0.0.0.0/0)
+6. Go to Database → Connect → Connect your application
+7. Copy connection string: `mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?appName=Cluster0`
+
+### 8.3 Create Backend Service on Render
+
+1. Go to [Render Dashboard](https://dashboard.render.com/)
+2. Click **New +** → **Web Service**
+3. Connect your GitHub repository
+4. Configure the service:
+   - **Name**: `donation-charity-backend`
+   - **Region**: Choose closest to you
+   - **Branch**: `main` (or `master`)
+   - **Root Directory**: `backend`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Instance Type**: `Free`
+
+### 8.4 Add Environment Variables in Render
+
+**CRITICAL:** Click **Advanced** and add these environment variables:
+
+```env
+PORT=5000
+NODE_ENV=production
+MONGO_URI=mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/donationDB?retryWrites=true&w=majority
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long-change-this-in-production
+JWT_EXPIRE=7d
+MAIL_PROVIDER=sendgrid
+SENDGRID_API_KEY=your-sendgrid-api-key-here
+MAIL_FROM=noreply@yourdomain.com
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+RAZORPAY_KEY_ID=your-razorpay-key-id
+RAZORPAY_KEY_SECRET=your-razorpay-key-secret
+FRONTEND_URL=https://your-frontend-url.vercel.app
+VIDEO_SERVER_PORT=5001
+```
+
+**⚠️ Important Notes:**
+- Replace ALL placeholder values with actual credentials
+- Use the MongoDB Atlas connection string (not localhost)
+- Generate a new, strong JWT_SECRET for production
+- Add `/donationDB` to your MongoDB URI to specify the database name
+
+### 8.5 Deploy Frontend to Vercel
+
+1. Go to [Vercel](https://vercel.com/)
+2. Click **Add New** → **Project**
+3. Import your GitHub repository
+4. Configure:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+
+5. Add environment variables:
+   ```env
+   VITE_API_BASE=https://your-backend-name.onrender.com
+   VITE_VIDEO_SERVER=https://your-backend-name.onrender.com
+   VITE_NODE_ENV=production
+   ```
+
+6. Deploy!
+
+### 8.6 Update Backend FRONTEND_URL
+
+After Vercel deployment:
+1. Copy your Vercel URL (e.g., `https://your-app.vercel.app`)
+2. Go back to Render Dashboard → Your Backend Service
+3. Update `FRONTEND_URL` environment variable with your Vercel URL
+4. Click **Manual Deploy** → **Deploy latest commit**
+
+### 8.7 Verify Deployment
+
+**Test Backend:**
+```bash
+curl https://your-backend-name.onrender.com/health
+```
+
+**Test Frontend:**
+Open `https://your-app.vercel.app` in browser
+
+**Common Issues:**
+- ❌ **MONGO_URI undefined**: Add MONGO_URI in Render environment variables
+- ❌ **SENDGRID_API_KEY missing**: Add SENDGRID_API_KEY in Render
+- ❌ **CORS errors**: Update FRONTEND_URL to match your Vercel URL
+- ❌ **MongoDB connection failed**: Check MongoDB Atlas IP whitelist (use 0.0.0.0/0)
+
+---
+
+## �📚 Next Steps
 
 1. ✅ Complete the initial setup above
 2. 📖 Read the [README.md](./README.md) for project overview
 3. 🎨 Explore the frontend at `http://localhost:5175`
 4. 🔌 Test API endpoints at `http://localhost:5000/api`
 5. 📊 View MongoDB data using [MongoDB Compass](https://www.mongodb.com/products/compass)
-6. 🚀 When ready, follow [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for production deployment
+6. 🚀 Deploy to production using Step 8 above
 
 ---
 
