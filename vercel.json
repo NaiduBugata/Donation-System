@@ -1,11 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd frontend && npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "cd frontend && npm run build",
   "devCommand": "cd frontend && npm run dev",
-  "installCommand": "cd frontend && npm install --legacy-peer-deps",
+  "installCommand": "cd frontend && npm ci || (cd frontend && npm install --legacy-peer-deps)",
   "framework": null,
   "outputDirectory": "frontend/dist",
-  "ignoreCommand": "echo Skipping unrelated submodule paths",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*).js",
@@ -15,6 +15,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/frontend/dist/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
