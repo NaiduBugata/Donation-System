@@ -27,8 +27,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# MongoDB
-data/
+# MongoDB (backend data directory only)
+/backend/data/
 
 # Temporary files
 *.tmp
