@@ -14,6 +14,9 @@ import DonorDashboard from "./pages/donor/DonorDashboard";
 import ReceiverDashboard from "./pages/receiver/ReceiverDashboard";
 import OrganizationDashboard from "./pages/organization/SocialImpactOrgDashboard";
 
+// Payment Components
+import PaymentHistory from "./components/PaymentHistory";
+
 // Public Pages (No Auth Required)
 import Transparency from "./pages/public/Transparency";
 import ImpactPage from "./pages/public/ImpactPage";
@@ -60,10 +63,20 @@ function App() {
             <ManageImpactStories />
           </ProtectedRoute>
         } />
+        <Route path="/admin/payments" element={
+          <ProtectedRoute allowedRole="admin">
+            <PaymentHistory />
+          </ProtectedRoute>
+        } />
         
         <Route path="/donor" element={
           <ProtectedRoute allowedRole="donor">
             <DonorDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/donor/payments" element={
+          <ProtectedRoute allowedRole="donor">
+            <PaymentHistory />
           </ProtectedRoute>
         } />
         <Route path="/Donor_Dashboard" element={

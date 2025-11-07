@@ -482,6 +482,12 @@ const AdminDashboard = () => {
           👥 Users
         </button>
         <button
+          onClick={() => setActiveTab('payments')}
+          style={activeTab === 'payments' ? styles.tabActive : styles.tab}
+        >
+          💳 Payments
+        </button>
+        <button
           onClick={() => navigate('/admin/impact-stories')}
           style={styles.tab}
         >

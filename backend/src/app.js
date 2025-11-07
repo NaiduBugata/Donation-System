@@ -90,6 +90,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter, authRoutes); // Apply stricter rate limit to auth
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/donate', transactionRoutes);
+app.use('/api/payments', require('./routes/paymentRoutes')); // ✅ NEW: Razorpay payment routes
 app.use('/api/requests', requestRoutes);
 app.use('/api/geo', geoRoutes);
 app.use('/api/ai', aiRoutes);
