@@ -24,7 +24,7 @@ const createOrder = async (req, res) => {
     const options = {
       amount: parseInt(amount), // Amount in paise
       currency: 'INR',
-      receipt: `rcpt_${Date.now()}_${userId}`,
+      receipt: `rcpt_${Date.now()}`.substring(0, 40), // Max 40 chars
       payment_capture: 1,
     };
 
@@ -186,7 +186,7 @@ const createAnonymousOrder = async (req, res) => {
     const options = {
       amount: parseInt(amount), // Amount in paise
       currency: 'INR',
-      receipt: `rcpt_${Date.now()}_${anonymousId}`,
+      receipt: `anon_${Date.now()}`.substring(0, 40), // Max 40 chars
       payment_capture: 1,
     };
 

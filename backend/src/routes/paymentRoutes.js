@@ -5,7 +5,6 @@ const {
   createOrder,
   createAnonymousOrder,
   verifyPayment,
-  webhook,
   getPaymentHistory,
   getPaymentAnalytics
 } = require('../controllers/paymentController');
@@ -14,8 +13,7 @@ const router = express.Router();
 
 // Public routes (no authentication required)
 router.post('/create-anonymous-order', createAnonymousOrder);
-// Razorpay webhook (must receive raw body)
-router.post('/webhook', express.raw({ type: '*/*' }), webhook);
+// Note: Webhook is registered separately in app.js to handle raw body
 
 // Protected routes (require authentication)
 router.post('/create-order', protect, createOrder);

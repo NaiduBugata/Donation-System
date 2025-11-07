@@ -69,6 +69,11 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// ⚠️ IMPORTANT: Razorpay webhook needs raw body, register BEFORE body parser
+const paymentWebhookRouter = express.Router();
+paymentWebhookRouter.post('/webhook', express.raw({ type: '*/*' }), require('./controllers/paymentController').webhook);
+app.use('/api/payments', paymentWebhookRouter);
+
 // Body parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -90,7 +95,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter, authRoutes); // Apply stricter rate limit to auth
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/donate', transactionRoutes);
-app.use('/api/payments', require('./routes/paymentRoutes')); // ✅ NEW: Razorpay payment routes
+app.use('/api/payments', require('./routes/paymentRoutes')); // ✅ Razorpay payment routes (non-webhook)
 app.use('/api/requests', requestRoutes);
 app.use('/api/geo', geoRoutes);
 app.use('/api/ai', aiRoutes);
