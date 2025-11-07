@@ -68,7 +68,7 @@ const RazorpayPayment = ({
 
       // Razorpay payment options
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_mGLrU8MewNWOOj',
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_RcsavZB6Xb9MD7',
         amount: order.amount,
         currency: order.currency,
         name: '🌍 Social Impact Platform',
