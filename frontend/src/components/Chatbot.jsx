@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import knowledge from '../data/chatbotKnowledge';
+import knowledge from '../data/chatbotKnowledge.js';
 import '../styles/universal.css';
 import '../styles/chatbot.css';
 
