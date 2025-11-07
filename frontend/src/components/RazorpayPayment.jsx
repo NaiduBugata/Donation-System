@@ -4,6 +4,8 @@ const RazorpayPayment = ({
   amount, 
   campaignId, 
   donationType = 'general',
+  isAnonymous = false,
+  donorEmail = '',
   onSuccess, 
   onFailure,
   onCancel,
@@ -28,9 +30,18 @@ const RazorpayPayment = ({
       return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (!currentUser.id) {
-      alert('Please login to make a payment');
+    // Check authentication for non-anonymous donations
+    if (!isAnonymous) {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      if (!currentUser.id) {
+        alert('Please login to make a payment');
+        return;
+      }
+    }
+
+    // Validate email for anonymous donations
+    if (isAnonymous && !donorEmail) {
+      alert('Please provide an email for anonymous donation tracking');
       return;
     }
 
@@ -45,15 +56,24 @@ const RazorpayPayment = ({
         return;
       }
 
-      // Create Razorpay order
-      const orderResponse = await fetch('/api/payments/create-order', {
+      // Create Razorpay order (anonymous or authenticated)
+      const orderEndpoint = isAnonymous ? '/api/payments/create-anonymous-order' : '/api/payments/create-order';
+      const orderPayload = {
+        amount: parseFloat(amount) * 100, // Convert to paise
+        campaignId: campaignId || null,
+        donationType
+      };
+
+      // Add anonymous-specific fields
+      if (isAnonymous) {
+        orderPayload.isAnonymous = true;
+        orderPayload.email = donorEmail;
+      }
+
+      const orderResponse = await fetch(orderEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: parseFloat(amount) * 100, // Convert to paise
-          campaignId: campaignId || null,
-          donationType
-        })
+        body: JSON.stringify(orderPayload)
       });
 
       const orderData = await orderResponse.json();
@@ -91,7 +111,13 @@ const RazorpayPayment = ({
             const verifyData = await verifyResponse.json();
 
             if (verifyData.success) {
-              if (onSuccess) onSuccess(verifyData.payment);
+              const result = {
+                payment: verifyData.payment,
+                isAnonymous,
+                anonymousId: orderData.anonymousId,
+                qrCode: orderData.qrCode
+              };
+              if (onSuccess) onSuccess(result);
             } else {
               if (onFailure) onFailure(verifyData.message);
               else alert('Payment verification failed: ' + verifyData.message);

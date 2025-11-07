@@ -6,6 +6,7 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
   const [donationType, setDonationType] = useState(null); // 'financial' or 'service'
   const [amount, setAmount] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [anonymousEmail, setAnonymousEmail] = useState('');
   const [result, setResult] = useState(null);
   const [impactStory, setImpactStory] = useState('');
 
@@ -31,8 +32,15 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
         return;
       }
 
-      if (!currentUser.id) {
+      // Check authentication for non-anonymous donations
+      if (!isAnonymous && !currentUser.id) {
         alert('Please login to make a donation');
+        return;
+      }
+
+      // Validate email for anonymous donations
+      if (isAnonymous && !anonymousEmail) {
+        alert('Please provide an email for anonymous donation tracking');
         return;
       }
 
@@ -44,15 +52,24 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
           return;
         }
 
-        // Create Razorpay order
-        const orderResponse = await fetch('/api/payments/create-order', {
+        // Create Razorpay order (anonymous or authenticated)
+        const orderEndpoint = isAnonymous ? '/api/payments/create-anonymous-order' : '/api/payments/create-order';
+        const orderPayload = {
+          amount: parseFloat(amount) * 100, // Convert to paise
+          campaignId: campaign?.id,
+          donationType: campaign ? 'campaign' : 'general'
+        };
+
+        // Add anonymous-specific fields
+        if (isAnonymous) {
+          orderPayload.isAnonymous = true;
+          orderPayload.email = anonymousEmail;
+        }
+
+        const orderResponse = await fetch(orderEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: parseFloat(amount) * 100, // Convert to paise
-            campaignId: campaign?.id,
-            donationType: campaign ? 'campaign' : 'general'
-          })
+          body: JSON.stringify(orderPayload)
         });
 
         const orderData = await orderResponse.json();
@@ -95,6 +112,8 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
                   paymentId: verifyData.payment.paymentId,
                   amount: parseFloat(amount),
                   isAnonymous,
+                  anonymousId: orderData.anonymousId,
+                  qrCode: orderData.qrCode,
                   impactStory: verifyData.payment.impactStory
                 });
                 setImpactStory(verifyData.payment.impactStory);
@@ -333,6 +352,39 @@ export default function DonationFlow({ campaign, onClose, onSuccess }) {
                   </div>
                 </label>
               </div>
+
+              {/* Anonymous Email Input */}
+              {isAnonymous && (
+                <div style={{
+                  border: '1px solid #fbbf24',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  marginBottom: '1.5rem',
+                  background: '#fffbeb'
+                }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#92400e' }}>
+                    📧 Email for Anonymous Tracking:
+                  </label>
+                  <input
+                    type="email"
+                    value={anonymousEmail}
+                    onChange={(e) => setAnonymousEmail(e.target.value)}
+                    placeholder="Enter your email to receive QR tracking code"
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid #fbbf24',
+                      borderRadius: '6px',
+                      fontSize: '1rem',
+                      background: 'white'
+                    }}
+                    required
+                  />
+                  <div style={{ fontSize: '0.875rem', color: '#92400e', marginTop: '0.5rem' }}>
+                    This email will only be used to send you the tracking QR code and donation receipts.
+                  </div>
+                </div>
+              )}
 
               {/* Payment Method (Simulated) */}
               <div style={{
