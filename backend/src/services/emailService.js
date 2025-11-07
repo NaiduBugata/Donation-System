@@ -10,13 +10,13 @@ if (process.env.SENDGRID_API_KEY) {
 // Send credentials email after approval
 const sendCredentialsEmail = async (to, credentials, requestDetails) => {
   try {
-    const isOrganization = credentials.role === 'organization' || credentials.role === 'ngo' || credentials.role === 'receiver';
-    const roleLabel = isOrganization ? 'NGO/Organization' : 'Beneficiary';
+    const isOrganization = credentials.role === 'organization' || credentials.role === 'ngo';
+    const roleLabel = isOrganization ? 'NGO/Organization' : (credentials.role === 'receiver' ? 'Receiver/Beneficiary' : 'Beneficiary');
     
     const msg = {
       to: to,
       from: process.env.MAIL_FROM || process.env.SENDGRID_FROM_EMAIL || 'noreply@socialimpact.org',
-      subject: `🎉 Request Approved - Login Credentials for ${roleLabel}`,
+      subject: `🎉 ${isOrganization ? 'NGO Registration' : 'Request'} Approved - Login Credentials for ${roleLabel}`,
       html: `
         <!DOCTYPE html>
         <html>

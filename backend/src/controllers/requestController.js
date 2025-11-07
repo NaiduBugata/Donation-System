@@ -241,7 +241,16 @@ const approveRequest = async (req, res) => {
     
     // Hash the password and update the user
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
-    await User.findByIdAndUpdate(beneficiary._id, { password: hashedPassword });
+    const updateData = { password: hashedPassword };
+    
+    // If it's an organization request, also mark them as verified
+    if (isOrganizationRequest) {
+      updateData.isVerified = true;
+      updateData.role = 'organization'; // Ensure role is set correctly
+      console.log('🏢 Marking organization as verified');
+    }
+    
+    await User.findByIdAndUpdate(beneficiary._id, updateData);
     console.log('💾 Password updated in database');
     
     // Update request status to approved
