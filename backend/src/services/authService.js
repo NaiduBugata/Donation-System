@@ -4,12 +4,34 @@ const { hashPassword, comparePassword } = require('../utils/hashUtils');
 const { generateToken } = require('../utils/jwtUtils');
 
 class AuthService {
-  static async register({ name, email, password, role }) {
+  static async register(userData) {
+    const { name, email, password, role, phone, profession, license, address, aadhar, registrationNumber, website, adminCode } = userData;
+    
     const existing = await User.findOne({ email });
     if (existing) throw new Error('User already exists');
 
     const hashedPassword = await hashPassword(password);
-    const user = await User.create({ name, email, password: hashedPassword, role });
+    
+    // Create user object with all provided fields
+    const userObj = {
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      phone,
+      profession,
+      license,
+      address,
+      aadhar,
+      registrationNumber,
+      website,
+      adminCode
+    };
+
+    // Remove undefined fields
+    Object.keys(userObj).forEach(key => userObj[key] === undefined && delete userObj[key]);
+
+    const user = await User.create(userObj);
     const token = generateToken(user);
     return { user, token };
   }

@@ -12,7 +12,19 @@ const AuthForm = () => {
   const [isActive, setIsActive] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [registerData, setRegisterData] = useState({ username: '', email: '', password: '' });
+  const [registerData, setRegisterData] = useState({ 
+    username: '', 
+    email: '', 
+    password: '',
+    phone: '',
+    profession: '',
+    license: '',
+    address: '',
+    aadhar: '',
+    registrationNumber: '',
+    website: '',
+    adminCode: ''
+  });
   const [userRole, setUserRole] = useState('');
   const [loading, setLoading] = useState(false);
   // Initialize dark mode state from localStorage
@@ -193,17 +205,35 @@ const AuthForm = () => {
     }
 
     try {
+      // Prepare registration data with all fields
+      const registrationPayload = {
+        name: registerData.username, // Using username field as name
+        email: registerData.email,
+        password: registerData.password,
+        role: userRole,
+        phone: registerData.phone || undefined,
+        profession: registerData.profession || undefined,
+        license: registerData.license || undefined,
+        address: registerData.address || undefined,
+        aadhar: registerData.aadhar || undefined,
+        registrationNumber: registerData.registrationNumber || undefined,
+        website: registerData.website || undefined,
+        adminCode: registerData.adminCode || undefined
+      };
+
+      // Remove undefined fields
+      Object.keys(registrationPayload).forEach(key => 
+        registrationPayload[key] === undefined && delete registrationPayload[key]
+      );
+
+      console.log('Sending registration data:', registrationPayload);
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: registerData.username, // Using username field as name
-          email: registerData.email,
-          password: registerData.password,
-          role: userRole
-        })
+        body: JSON.stringify(registrationPayload)
       });
 
       const data = await response.json();
