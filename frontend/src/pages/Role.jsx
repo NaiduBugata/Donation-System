@@ -104,8 +104,8 @@ const RoleSelection = () => {
 
       <section className="role-hero">
         <div className="role-content">
-          <h2>Select Your <span>Role</span></h2>
-          <h5>Join the Social Impact ecosystem. Every role creates measurable change.</h5>
+          <h1>Select Your <span>Role</span></h1>
+          <h2>Join the Social Impact ecosystem. Every role creates measurable change.</h2>
           
           <div className="role-grid">
             {roles.map((role) => (
