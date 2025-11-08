@@ -106,5 +106,41 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, updateProfile, updateUserPassword, deleteUser };
+const getAllCredentials = async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 });
+    
+    const credentials = users.map(user => ({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone: user.phone || 'N/A',
+      profession: user.profession || 'N/A',
+      license: user.license || 'N/A',
+      address: user.address || 'N/A',
+      aadhar: user.aadhar || 'N/A',
+      registrationNumber: user.registrationNumber || 'N/A',
+      website: user.website || 'N/A',
+      trustScore: user.trustScore || 0,
+      badge: user.badge || 'None',
+      kycStatus: user.kycStatus || 'pending',
+      isVerified: user.isVerified || false,
+      createdAt: user.createdAt,
+      note: '⚠️ Password is hashed and cannot be displayed for security reasons'
+    }));
+
+    res.json({ 
+      success: true, 
+      total: credentials.length,
+      data: credentials,
+      message: 'All user credentials retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Error fetching credentials:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getUsers, updateProfile, updateUserPassword, deleteUser, getAllCredentials };
  
