@@ -316,7 +316,7 @@ const AuthForm = () => {
           </div>
           <form onSubmit={handleSubmit}>
             <div className="form-field" style={formFieldStyle}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Username</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Username</label>
               <div className="input-box">
                 <input
                   type="text"
@@ -330,7 +330,7 @@ const AuthForm = () => {
             </div>
 
             <div className="form-field" style={formFieldStyle}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Password</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Password</label>
               <div className="input-box">
                 <input
                   type="password"
@@ -410,7 +410,7 @@ const AuthForm = () => {
             {userRole === 'organization' ? (
               <>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Organization Name</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Organization Name</label>
                   <div className="input-box">
                     <input 
                       type="text" 
@@ -423,7 +423,7 @@ const AuthForm = () => {
                   </div>
                 </div>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Registration Number</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Registration Number</label>
                   <div className="input-box">
                     <input 
                       type="text" 
@@ -434,7 +434,7 @@ const AuthForm = () => {
                   </div>
                 </div>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Website (Optional)</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Website (Optional)</label>
                   <div className="input-box">
                     <input 
                       type="url" 
@@ -447,7 +447,7 @@ const AuthForm = () => {
             ) : userRole === 'helper' ? (
               <>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Full Name</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Full Name</label>
                   <div className="input-box">
                     <input 
                       type="text" 
@@ -460,7 +460,7 @@ const AuthForm = () => {
                   </div>
                 </div>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Profession/Specialization</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Profession/Specialization</label>
                   <div className="input-box">
                     <select 
                       name="profession"
@@ -487,7 +487,7 @@ const AuthForm = () => {
                   </div>
                 </div>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Professional License/ID (Optional)</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Professional License/ID (Optional)</label>
                   <div className="input-box">
                     <input 
                       type="text" 
@@ -499,7 +499,7 @@ const AuthForm = () => {
               </>
             ) : (
               <div className="form-field" style={formFieldStyle}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>
                   {userRole === 'admin' ? 'Admin Username' : 'Username'}
                 </label>
                 <div className="input-box">
@@ -516,7 +516,7 @@ const AuthForm = () => {
             )}
             
             <div className="form-field" style={formFieldStyle}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Email</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Email</label>
               <div className="input-box">
                 <input 
                   type="email" 
@@ -531,7 +531,7 @@ const AuthForm = () => {
             
             {(userRole === 'donor' || userRole === 'helper' || userRole === 'receiver' || userRole === 'organization') && (
               <div className="form-field" style={formFieldStyle}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Phone Number</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Phone Number</label>
                 <div className="input-box">
                   <input 
                     type="tel" 
@@ -545,7 +545,7 @@ const AuthForm = () => {
             )}
             
             <div className="form-field" style={formFieldStyle}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Password</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Password</label>
               <div className="input-box">
                 <input 
                   type="password" 
@@ -561,7 +561,7 @@ const AuthForm = () => {
             
             {userRole === 'admin' && (
               <div className="form-field" style={formFieldStyle}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Admin Code</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Admin Code</label>
                 <div className="input-box">
                   <input 
                     type="text" 
@@ -576,7 +576,7 @@ const AuthForm = () => {
             {userRole === 'receiver' && (
               <>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Full Address</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Full Address</label>
                   <div className="input-box">
                     <textarea 
                       name="address"
@@ -595,7 +595,7 @@ const AuthForm = () => {
                   </div>
                 </div>
                 <div className="form-field" style={formFieldStyle}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#2c3e50', fontWeight: '600', textAlign: 'left' }}>Aadhar Number (KYC)</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', color: '#63a0ddff', fontWeight: '600', textAlign: 'left' }}>Aadhar Number (KYC)</label>
                   <div className="input-box">
                     <input 
                       type="text" 
