@@ -50,6 +50,7 @@ const allowedOrigins = [
   'http://localhost:5174',
   'http://localhost:5175',
   'https://donation-frontend-phi.vercel.app',
+  'https://donation-system-sooty.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -58,9 +59,20 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+    // Check if origin is in allowed list or matches a pattern
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (origin === allowed) return true;
+      if (origin && origin.startsWith(allowed)) return true;
+      // Allow all Vercel preview deployments
+      if (origin && origin.includes('vercel.app')) return true;
+      return false;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
+      console.log(`❌ CORS blocked origin: ${origin}`);
+      console.log(`✅ Allowed origins:`, allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
