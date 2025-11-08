@@ -15,6 +15,9 @@ const AdminDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [sanctionAmount, setSanctionAmount] = useState('');
   const [selectedKYC, setSelectedKYC] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -331,6 +334,73 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
     navigate('/');
+  };
+
+  // User Management Functions
+  const handleViewUserDetails = (userObj) => {
+    setSelectedUser(userObj);
+    setShowUserModal(true);
+    setNewPassword('');
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!confirm(`Update password for ${selectedUser.email}?`)) return;
+
+    try {
+      const response = await fetch(`/api/users/${selectedUser.id}/password`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ newPassword })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('✅ Password updated successfully!');
+        setShowUserModal(false);
+        setNewPassword('');
+      } else {
+        alert('❌ Failed to update password: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      alert('❌ Error updating password: ' + error.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    if (!confirm(`⚠️ Are you sure you want to DELETE user: ${userName}?\n\nThis action cannot be undone and will remove:\n- User account\n- All their requests\n- All their transactions\n- All their data\n\nType 'DELETE' to confirm.`)) {
+      return;
+    }
+
+    const confirmation = prompt('Type DELETE to confirm:');
+    if (confirmation !== 'DELETE') {
+      alert('Deletion cancelled');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('✅ User deleted successfully');
+        setShowUserModal(false);
+        loadDashboardData();
+      } else {
+        alert('❌ Failed to delete user: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('❌ Error deleting user: ' + error.message);
+    }
   };
 
   const downloadCredentialsPDF = (request) => {
@@ -935,7 +1005,10 @@ const AdminDashboard = () => {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <h2>All Users</h2>
+            <h2>All Users Management</h2>
+            <p style={{color: '#718096', marginBottom: '20px'}}>
+              Total Users: {allUsers.length} | View details, update passwords, or delete users
+            </p>
             <div style={styles.usersTable}>
               <table style={{width: '100%', borderCollapse: 'collapse'}}>
                 <thead>
@@ -946,28 +1019,175 @@ const AdminDashboard = () => {
                     <th style={styles.th}>KYC Status</th>
                     <th style={styles.th}>Trust Score</th>
                     <th style={styles.th}>Badge</th>
+                    <th style={styles.th}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {allUsers.map(u => (
-                    <tr key={u.id}>
-                      <td style={styles.td}>{u.name}</td>
+                    <tr key={u.id} style={{borderBottom: '1px solid #e2e8f0'}}>
+                      <td style={styles.td}>{u.name || 'N/A'}</td>
                       <td style={styles.td}>{u.email}</td>
-                      <td style={styles.td}>{u.role}</td>
                       <td style={styles.td}>
                         <span style={{
-                          color: u.kycStatus === 'approved' ? '#48bb78' : '#ed8936'
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          backgroundColor: 
+                            u.role === 'admin' ? '#667eea' : 
+                            u.role === 'donor' ? '#f093fb' :
+                            u.role === 'helper' ? '#764ba2' :
+                            u.role === 'receiver' ? '#f5576c' :
+                            u.role === 'organization' ? '#38b2ac' : '#cbd5e0',
+                          color: 'white'
+                        }}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td style={styles.td}>
+                        <span style={{
+                          color: u.kycStatus === 'approved' ? '#48bb78' : '#ed8936',
+                          fontWeight: '600'
                         }}>
                           {u.kycStatus || 'pending'}
                         </span>
                       </td>
                       <td style={styles.td}>{u.trustScore || 0}</td>
                       <td style={styles.td}>{u.badge || '-'}</td>
+                      <td style={styles.td}>
+                        <button
+                          onClick={() => handleViewUserDetails(u)}
+                          style={{
+                            padding: '6px 12px',
+                            marginRight: '5px',
+                            backgroundColor: '#4299e1',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          View Details
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {/* User Details Modal */}
+            {showUserModal && selectedUser && (
+              <div style={styles.modalOverlay}>
+                <div style={styles.modal}>
+                  <div style={styles.modalHeader}>
+                    <h2>User Details & Management</h2>
+                    <button onClick={() => setShowUserModal(false)} style={styles.closeButton}>×</button>
+                  </div>
+                  <div style={styles.modalBody}>
+                    <div style={styles.userDetailSection}>
+                      <h3 style={{marginBottom: '15px', color: '#2d3748'}}>User Information</h3>
+                      <div style={styles.detailRow}>
+                        <strong>Name:</strong> <span>{selectedUser.name || 'N/A'}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>Email:</strong> <span>{selectedUser.email}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>Role:</strong> <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: 
+                            selectedUser.role === 'admin' ? '#667eea' : 
+                            selectedUser.role === 'donor' ? '#f093fb' :
+                            selectedUser.role === 'helper' ? '#764ba2' :
+                            selectedUser.role === 'receiver' ? '#f5576c' :
+                            selectedUser.role === 'organization' ? '#38b2ac' : '#cbd5e0',
+                          color: 'white',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}>{selectedUser.role}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>KYC Status:</strong> <span style={{
+                          color: selectedUser.kycStatus === 'approved' ? '#48bb78' : '#ed8936',
+                          fontWeight: '600'
+                        }}>{selectedUser.kycStatus || 'pending'}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>Trust Score:</strong> <span>{selectedUser.trustScore || 0}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>Badge:</strong> <span>{selectedUser.badge || 'None'}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>Phone:</strong> <span>{selectedUser.phone || 'N/A'}</span>
+                      </div>
+                      <div style={styles.detailRow}>
+                        <strong>Verified:</strong> <span>{selectedUser.isVerified ? '✅ Yes' : '❌ No'}</span>
+                      </div>
+                    </div>
+
+                    <div style={{...styles.userDetailSection, marginTop: '20px', borderTop: '2px solid #e2e8f0', paddingTop: '20px'}}>
+                      <h3 style={{marginBottom: '15px', color: '#2d3748'}}>Update Password</h3>
+                      <input
+                        type="text"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password (min 6 characters)"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          border: '2px solid #e2e8f0',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          marginBottom: '10px'
+                        }}
+                      />
+                      <button
+                        onClick={handleUpdatePassword}
+                        style={{
+                          padding: '10px 20px',
+                          backgroundColor: '#4299e1',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          width: '100%'
+                        }}
+                      >
+                        Update Password
+                      </button>
+                    </div>
+
+                    <div style={{...styles.userDetailSection, marginTop: '20px', borderTop: '2px solid #e2e8f0', paddingTop: '20px'}}>
+                      <h3 style={{marginBottom: '15px', color: '#e53e3e'}}>Danger Zone</h3>
+                      <p style={{color: '#718096', fontSize: '14px', marginBottom: '10px'}}>
+                        ⚠️ Deleting this user will permanently remove all their data, requests, and transactions.
+                      </p>
+                      <button
+                        onClick={() => handleDeleteUser(selectedUser.id, selectedUser.name || selectedUser.email)}
+                        style={{
+                          padding: '10px 20px',
+                          backgroundColor: '#e53e3e',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          width: '100%'
+                        }}
+                      >
+                        Delete User Permanently
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1346,6 +1566,66 @@ const styles = {
   analyticSubtext: {
     fontSize: '0.75rem',
     color: '#a0aec0'
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000
+  },
+  modal: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    width: '90%',
+    maxWidth: '600px',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+  },
+  modalHeader: {
+    padding: '20px 30px',
+    borderBottom: '2px solid #e2e8f0',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'sticky',
+    top: 0,
+    backgroundColor: 'white',
+    zIndex: 1
+  },
+  modalBody: {
+    padding: '30px'
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '32px',
+    cursor: 'pointer',
+    color: '#718096',
+    padding: '0',
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  userDetailSection: {
+    backgroundColor: '#f7fafc',
+    padding: '20px',
+    borderRadius: '8px'
+  },
+  detailRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '12px 0',
+    borderBottom: '1px solid #e2e8f0',
+    fontSize: '14px'
   }
 };
 
