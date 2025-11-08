@@ -15,15 +15,29 @@ const AuthForm = () => {
   const [registerData, setRegisterData] = useState({ username: '', email: '', password: '' });
   const [userRole, setUserRole] = useState('');
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
-  // Get selected role from localStorage on component mount
+  // Get selected role and dark mode from localStorage on component mount
   React.useEffect(() => {
     const selectedRole = localStorage.getItem('selectedRole');
     if (selectedRole) {
       setUserRole(selectedRole);
     }
+    
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    }
   }, []);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    localStorage.setItem('darkMode', (!darkMode).toString());
+    document.body.classList.toggle('dark-mode');
+  };
 
   // Role-specific configurations
   const getRoleConfig = () => {
@@ -227,6 +241,36 @@ const AuthForm = () => {
               <a href="#help" onClick={() => setMenuOpen(false)}>Help</a>
             </li>
           </ul>
+          
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            style={{
+              background: darkMode ? '#1a202c' : '#fff',
+              color: darkMode ? '#fff' : '#1a202c',
+              border: `2px solid ${darkMode ? '#4299e1' : '#e2e8f0'}`,
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontSize: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginRight: '15px',
+              transition: 'all 0.3s ease',
+              fontWeight: '600'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            {darkMode ? '🌙' : '☀️'}
+            {darkMode ? 'Dark' : 'Light'}
+          </button>
+          
           <div
             className="menu-toggle"
             onClick={() => setMenuOpen((prev) => !prev)}
@@ -246,8 +290,8 @@ const AuthForm = () => {
           onClick={handleBackToRoles}
           style={{
             position: 'absolute',
-            top: '20px',
-            left: '20px',
+            bottom: '0px',
+            left: '320px',
             background: 'white',
             color: roleConfig.color,
             border: 'none',
@@ -318,14 +362,14 @@ const AuthForm = () => {
 
             <div className="regi-link">
               <p>
-                Don't have an account? <br />
+                Don't have an account?
                 <a href="#" onClick={handleRegisterClick}>Sign Up</a>
               </p>
             </div>
           </form>
         </div>
 
-        {/* Login Info */}
+        {/* Login Info
         <div className="info-content Login" style={{ background: roleConfig.gradient }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>{roleConfig.icon}</div>
           <h2>{roleConfig.loginWelcome}</h2>
@@ -365,7 +409,7 @@ const AuthForm = () => {
               <p>💰 Sanction funds</p>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Register Form */}
         <div className="form-box Register">
@@ -586,14 +630,14 @@ const AuthForm = () => {
             </div>
             <div className="regi-link">
               <p>
-                Already have an account? <br />
+                Already have an account?
                 <a href="#" onClick={handleLoginClick}>Sign In</a>
               </p>
             </div>
           </form>
         </div>
 
-        {/* Register Info */}
+        {/* Register Info
         <div className="info-content Register" style={{ background: roleConfig.gradient }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>{roleConfig.icon}</div>
           <h2>{roleConfig.registerWelcome}</h2>
@@ -633,7 +677,7 @@ const AuthForm = () => {
               <p>📊 Analytics dashboard</p>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </>
   );
