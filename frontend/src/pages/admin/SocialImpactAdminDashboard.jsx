@@ -27,17 +27,28 @@ const AdminDashboard = () => {
     loadDashboardData();
   }, []);
 
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+  };
+
   const loadDashboardData = async () => {
     try {
+      const headers = getAuthHeaders();
+
       // Load analytics
-      const analyticsRes = await fetch('/api/analytics');
+      const analyticsRes = await fetch('/api/analytics', { headers });
       const analyticsData = await analyticsRes.json();
       if (analyticsData.success) {
         setStats(analyticsData.data);
       }
 
       // Load pending requests
-      const requestsRes = await fetch('/api/requests');
+      const requestsRes = await fetch('/api/requests', { headers });
       const requestsData = await requestsRes.json();
       if (requestsData.success) {
         // Normalize request objects to have `id` (from Mongo `_id`) for client-side lookups
@@ -47,14 +58,14 @@ const AdminDashboard = () => {
       }
 
       // Load pending KYC
-      const kycRes = await fetch('/api/kyc');
+      const kycRes = await fetch('/api/kyc', { headers });
       const kycData = await kycRes.json();
       if (kycData.success) {
         setPendingKYC((kycData.data || []).filter(k => k.status === 'pending'));
       }
 
       // Load campaigns
-      const campaignsRes = await fetch('/api/campaigns');
+      const campaignsRes = await fetch('/api/campaigns', { headers });
       const campaignsData = await campaignsRes.json();
       if (campaignsData.success) {
         // Normalize campaign objects to have `id` (from Mongo `_id`) for client-side lookups
@@ -63,7 +74,7 @@ const AdminDashboard = () => {
       }
 
       // Load all users
-      const usersRes = await fetch('/api/users');
+      const usersRes = await fetch('/api/users', { headers });
       const usersData = await usersRes.json();
       if (usersData.success) {
         // Normalize user objects to have `id` matching Mongo `_id` so client lookups work
@@ -90,7 +101,7 @@ const AdminDashboard = () => {
         // Perform the approval network request which will generate password
         const response = await fetch('/api/requests/approve', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ requestId, adminId: user.id })
         });
         const data = await response.json();
@@ -146,7 +157,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch('/api/requests/reject', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ requestId, adminId: user.id, reason })
       });
       const data = await response.json();
@@ -168,7 +179,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch('/api/requests/sanction', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           requestId: selectedRequest.id,
           amount: parseFloat(sanctionAmount),
@@ -229,7 +240,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch('/api/kyc/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           kycId,
           adminId: user.id,
@@ -264,7 +275,7 @@ const AdminDashboard = () => {
       
       const response = await fetch(url, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
 
       console.log('Response status:', response.status, response.statusText);
@@ -295,7 +306,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch(`/api/campaigns/${campaignId}/reject`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
